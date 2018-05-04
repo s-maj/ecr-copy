@@ -80,12 +80,23 @@ func imageWorkers(svcSrc, svcDst *ecr.ECR, imageCh <-chan ecr.ImageDetail, docke
 	}
 }
 
-func dockerWorkers(srcToken, dstToken string, dockerCh <-chan map[string]string, controlCh <-chan struct{}) {
+func dockerWorkers(svcSrc, svcDst *ecr.ECR, dockerCh <-chan map[string]string, controlCh <-chan struct{}) {
+	// Spawn docker connector
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.WithVersion(dockerApiVer))
 	if err != nil {
 		log.Println(err.Error())
 	}
+
+	// Obtain docker auth tokens
+	srcToken := getDockerToken(svcSrc)
+	dstToken := getDockerToken(svcDst)
+
+	defer func() {
+		if err := recover(); err != nil {
+			go dockerWorkers(svcSrc, svcDst, dockerCh, controlCh)
+		}
+	}()
 
 	for {
 		select {
@@ -95,6 +106,7 @@ func dockerWorkers(srcToken, dstToken string, dockerCh <-chan map[string]string,
 			out, err := cli.ImagePull(ctx, image["src"], types.ImagePullOptions{RegistryAuth: srcToken})
 			if err != nil {
 				log.Error(err.Error())
+
 			}
 			eventsHandler(out, image["src"])
 
