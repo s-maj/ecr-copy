@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ecr_copy/cmd"
+	"ecrcopy/cmd"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"ecr_copy/app"
+	"ecrcopy/app"
 	"github.com/spf13/cobra"
 )
 
