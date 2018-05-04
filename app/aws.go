@@ -45,13 +45,9 @@ func copyImages(svcSrc, svcDst *ecr.ECR, imageWorkersNo, dockerWorkersNo int) {
 	imageCh := make(chan ecr.ImageDetail, 1000)
 	dockerCh := make(chan map[string]string, 10)
 
-	//docker
-	srcToken := getDockerToken(svcSrc)
-	dstToken := getDockerToken(svcDst)
-
 	log.Info("Spawning docker workers...")
 	for i := 0; i <= dockerWorkersNo; i++ {
-		go dockerWorkers(srcToken, dstToken, dockerCh, controlCh)
+		go dockerWorkers(svcSrc, svcDst, dockerCh, controlCh)
 	}
 
 	log.Info("Spawning image workers...")
